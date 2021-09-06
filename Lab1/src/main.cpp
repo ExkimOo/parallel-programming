@@ -6,25 +6,69 @@
 #include <pthread.h>
 #include <numeric>
 
-void *callback(void *arg);
+void *callback(void *args);
 
-std::vector<std::vector<float>> marks;
+class Student
+{
+    public:
+        int id;
+        int physics;
+        int math;
+        int informatics;
+        float avg;
+    
+        Student();
+        friend std::ostream& operator<<(std::ostream& os, const Student& s);
+
+        Student(int _id, int _physics, int _math, int _informatics, float _avg)
+        {
+            id = _id;
+            physics = _physics;
+            math = _math;
+            informatics = _informatics;
+            avg = _avg;
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const Student& s)
+        {
+            os << s.id << ".\t" << s.physics << "\t" << s.math << "\t" << s.informatics << "\tavg: " << s.avg;
+            return os;
+        }
+
+};
+
+std::vector<Student> students;
+
+// struct arg_struct {
+//     int N;
+//     int M;
+//     int arg[1];
+//     std::vector<Student> students;
+// };
 
 int main()
 {
     srand(time(NULL));
 
-    short N = 100;
-    short M = 90;
+    // arg_struct args;
+    int N = 10;
+    int M = 6;
     int arg[2] = {0, 1};
+    // std::cout << "arg " << &args.students[0].avg << std::endl;
+    // std::cout << "123 " << &args.students << std::endl;
+    // std::cout << "N = " << args.N << std::endl;
+    // std::cout << "M = " << args.M << std::endl;
 
-    std::cout << "N = " << N << std::endl;
-    std::cout << "M = " << M << std::endl;
-
+    //generating random marks
     for (int i = 0; i < N; i++)
     {
-        std::vector<float> student_marks = {(float)(i + 1), (float)(rand() % 4 + 2), (float)(rand() % 4 + 2), (float)(rand() % 4 + 2)};
-        marks.push_back(student_marks);
+        Student s = Student(i, (int)rand() % 4 + 2, (int)rand() % 4 + 2, (int)rand() % 4 + 2, .0);
+        students.push_back(s);
+    }
+
+    for (int i = 0; i < students.size(); i++)
+    {
+        std::cout <<  students[i] << std::endl;
     }
 
     pthread_t p[2];
@@ -35,12 +79,7 @@ int main()
             &p[i], 
             NULL, 
             callback, 
-            (void*)&arg[i]);
-    }
-
-    for (std::vector<std::vector<float>>::iterator it = marks.begin(); it != marks.end() ; it++)
-    {
-        std::cout << (*it)[0] << ". " << (*it)[1]<< " " << (*it)[2] << " " << (*it)[3] << " " << std::endl;
+            (void*)&arg);
     }
 
     for (int i = 0; i < 2; i++)
@@ -50,19 +89,19 @@ int main()
 
     std::cout << std::endl << "Students with avg mark: " << std::endl;
 
-    for (int i = 0; i < marks.size(); i++)
+    for (int i = 0; i < students.size(); i++)
     {
-        std::cout << marks[i][0] << ". "<< marks[i][4] << std::endl;
+        std::cout << students[i] << std::endl;
     }
 
     //sorting by avg mark
-    for (int i = 0; i < marks.size() - 1; i++)
+    for (int i = 0; i < students.size() - 1; i++)
     {
-        for (int j = i + 1; j < marks.size(); j++)
+        for (int j = i + 1; j < students.size(); j++)
         {
-            if (marks[i][4] < marks[j][4])
+            if (students[i].avg < students[j].avg)
             {
-                swap(marks[i], marks[j]);
+                std::swap(students[i], students[j]);
             }
         }
         
@@ -70,16 +109,16 @@ int main()
 
     std::cout << std::endl << "Students with sorted avg mark: " << std::endl;
     
-    for (int i = 0; i < marks.size(); i++)
+    for (int i = 0; i < students.size(); i++)
     {
-        std::cout << marks[i][0] << ". "<< marks[i][4] << std::endl;
+        std::cout << students[i] << std::endl;
     }
     
     std::cout << std::endl << "Chosen Students id:" << std::endl;
 
-    for (int i = 0; i < M && marks[i][4] >= 3; i++)
+    for (int i = 0; i < M && students[i].avg >= 3; i++)
     {
-        std::cout << marks[i][0] << " ";
+        std::cout << students[i].id << " ";
     }
 
     std::cout << std::endl;
@@ -89,17 +128,19 @@ int main()
     return 0;
 }
 
-void *callback(void *arg)
-{
-    short N = *(int*)arg;
-
-    short begin = N * 50;
-    short end = N * 50 + 50;
+void *callback(void *_arg){
+    int N = *(int*)_arg;
+    // std::cout << "123 " << &args->students[0].avg << std::endl;
+    // std::cout << "123 " << &args->students << std::endl;
+    int begin = N * 5;
+    int end = N * 5 + 10;
+    // std::cout << "N = " << args->N << std::endl;
 
     for (int i = begin; i < end; i++)
     {
-        double avg_mark = (float)(std::accumulate(marks[i].begin() + 1, marks[i].end(), 0)) / 3;
-        marks[i].push_back(avg_mark);
+        float avg_mark = (float)(students[i].math + students[i].physics + students[i].informatics) / 3;
+        // std::cout << (*args).students[i].math << " " << args->students[i].physics << " " << args->students[i].informatics << std::endl;
+        students[i].avg = avg_mark;
     }
     
     return NULL;
