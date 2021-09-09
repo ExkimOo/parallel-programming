@@ -54,15 +54,14 @@ int main()
     int N = 10;
     int M = 6;
     int arg[2] = {0, 1};
-    // std::cout << "arg " << &args.students[0].avg << std::endl;
-    // std::cout << "123 " << &args.students << std::endl;
-    // std::cout << "N = " << args.N << std::endl;
-    // std::cout << "M = " << args.M << std::endl;
+
+    std::cout << "N = " << N << std::endl;
+    std::cout << "M = " << M << std::endl << std::endl;
 
     //generating random marks
     for (int i = 0; i < N; i++)
     {
-        Student s = Student(i, (int)rand() % 4 + 2, (int)rand() % 4 + 2, (int)rand() % 4 + 2, .0);
+        Student s = Student(i + 1, (int)rand() % 4 + 2, (int)rand() % 4 + 2, (int)rand() % 4 + 2, .0);
         students.push_back(s);
     }
 
@@ -128,18 +127,14 @@ int main()
     return 0;
 }
 
-void *callback(void *_arg){
+void *callback(void* _arg){
     int N = *(int*)_arg;
-    // std::cout << "123 " << &args->students[0].avg << std::endl;
-    // std::cout << "123 " << &args->students << std::endl;
     int begin = N * 5;
-    int end = N * 5 + 10;
-    // std::cout << "N = " << args->N << std::endl;
+    int end = (N + 1) * 5 + 5;
 
     for (int i = begin; i < end; i++)
     {
         float avg_mark = (float)(students[i].math + students[i].physics + students[i].informatics) / 3;
-        // std::cout << (*args).students[i].math << " " << args->students[i].physics << " " << args->students[i].informatics << std::endl;
         students[i].avg = avg_mark;
     }
     
