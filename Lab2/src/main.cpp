@@ -15,8 +15,9 @@ int B[K];
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
+std::vector<std::string> queue;
 
-void* check(void* action);
+void* check(void* _action);
 
 
 int main()
@@ -53,7 +54,6 @@ int main()
     }
     std::cout << std::endl << std::endl;
     
-
     int arg[8] = {0, 1, 2, 3, 4, 5, 6, 7};
     pthread_t p[8];
 
@@ -70,21 +70,27 @@ int main()
     for (int i = 0; i < 8; i++)
     {  
         pthread_join(p[i], &result[i]);
-        pthread_mutex_lock(&mutex);
         std::cout << output[i] << (size_t)(off_t)result[i] << std::endl;
-        pthread_mutex_unlock(&mutex);
     }
+
+    std::cout << std::endl;
+    for (int i = 0; i < queue.size(); i++)
+    {
+        std::cout << queue[i] << std::endl;
+    }
+    
 
     system("pause");
 
     return 0;
 }
 
-void* check(void* action)
+void* check(void* _action)
 {
     int count = 0;
+    int action = *(int*)_action;
 
-    switch(*(int*)action)
+    switch(action)
     {
         //horizontal forward
         case 0:
@@ -116,6 +122,9 @@ void* check(void* action)
                     
                 }
             }
+            pthread_mutex_lock(&mutex);
+            queue.push_back("Thread with id " + std::to_string(action) + " found its number of occurrence: " + std::to_string(count));
+            pthread_mutex_unlock(&mutex);
             return (void*)count;
         }
         //horizontal backward
@@ -148,6 +157,9 @@ void* check(void* action)
                     
                 }
             }
+            pthread_mutex_lock(&mutex);
+            queue.push_back("Thread with id " + std::to_string(action) + " found its number of occurrence: " + std::to_string(count));
+            pthread_mutex_unlock(&mutex);
             return (void*)count;
         }
         //vertical forward
@@ -180,6 +192,9 @@ void* check(void* action)
                     
                 }
             }
+            pthread_mutex_lock(&mutex);
+            queue.push_back("Thread with id " + std::to_string(action) + " found its number of occurrence: " + std::to_string(count));
+            pthread_mutex_unlock(&mutex);
             return (void*)count;
         }
         //vertical backward
@@ -212,6 +227,9 @@ void* check(void* action)
                     
                 }
             }
+            pthread_mutex_lock(&mutex);
+            queue.push_back("Thread with id " + std::to_string(action) + " found its number of occurrence: " + std::to_string(count));
+            pthread_mutex_unlock(&mutex);
             return (void*)count;
         }
         //main diagonal forward
@@ -243,6 +261,9 @@ void* check(void* action)
                     }
                 }
             }
+            pthread_mutex_lock(&mutex);
+            queue.push_back("Thread with id " + std::to_string(action) + " found its number of occurrence: " + std::to_string(count));
+            pthread_mutex_unlock(&mutex);
             return (void*)count;
         }
         //main diagonal backward
@@ -276,6 +297,9 @@ void* check(void* action)
                     
                 }
             }
+            pthread_mutex_lock(&mutex);
+            queue.push_back("Thread with id " + std::to_string(action) + " found its number of occurrence: " + std::to_string(count));
+            pthread_mutex_unlock(&mutex);
             return (void*)count;
         }
         //secondary diaganal forward
@@ -308,6 +332,9 @@ void* check(void* action)
                     
                 }
             }
+            pthread_mutex_lock(&mutex);
+            queue.push_back("Thread with id " + std::to_string(action) + " found its number of occurrence: " + std::to_string(count));
+            pthread_mutex_unlock(&mutex);
             return (void*)count;
         }
         //secondary diagonal backward
@@ -342,6 +369,9 @@ void* check(void* action)
                     
                 }
             }
+            pthread_mutex_lock(&mutex);
+            queue.push_back("Thread with id " + std::to_string(action) + " found its number of occurrence: " + std::to_string(count));
+            pthread_mutex_unlock(&mutex);
             return (void*)count;
         }
         default:
