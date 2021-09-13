@@ -1,5 +1,6 @@
 //g++ -pthread -o main main.cpp
 #include <iostream>
+#include <vector>
 #include <stdlib.h>
 #include <pthread.h>
 #include <semaphore.h>
@@ -9,13 +10,16 @@ const int M = 5;
 
 int pieces = M;
 
-pthread_mutex_t eat = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t output = PTHREAD_MUTEX_INITIALIZER;
+sem_t sem;
 
 void* savage(void* arg);
 void* cook(void* arg);
 
 int main()
 {
+    sem_init(&sem, 0, M);
     pthread_t p_savages[N];
 
     int arg[N];
@@ -23,7 +27,7 @@ int main()
     {
         arg[i] = i+1;
     }
-    
+
     for (int i = 0; i < N; i++)
     {
         pthread_create(
@@ -42,9 +46,9 @@ int main()
         NULL
     );
 
-    Sleep(1000000);
+    Sleep(60000);
     system("pause");
-    
+
     return 0;
 }
 
@@ -54,16 +58,15 @@ void* savage(void* arg)
 
     while(true)
     {
-        pthread_mutex_lock(&eat);
-            if (pieces != 0)
-            {
-                pieces--;
+        pthread_mutex_lock(&mutex);
+            sem_wait(&sem);
+            pieces--;
+            pthread_mutex_lock(&output);
+                std::cout << "A Savage #" << id << " ate 1 piece" << std::endl;
+            pthread_mutex_unlock(&output);
+        pthread_mutex_unlock(&mutex);
 
-                Sleep(rand() % 500 + 200);
-                std::cout << "A Savage #" << id << " eated 1 piece and now there's " << pieces << " pieces" << std::endl;
-            }
-        pthread_mutex_unlock(&eat);
-        Sleep(rand() % 6000 + 500);
+        Sleep(1000);
     }
 
     return NULL;
@@ -73,23 +76,20 @@ void* cook(void* arg)
 {   
     while(true)
     {
-        pthread_mutex_lock(&eat);
-            if (pieces == 0)
+        if (pieces == 0)
+        {
+            for (int i = 0; i < M; i++)
             {
-                Sleep(1000);
-                std::cout << "------------------------------------" << std::endl;
-                std::cout << "A Cook woke up" << std::endl;
-                std::cout << "------------------------------------" << std::endl;
-                
-                //increase pieces
-                pieces = M;
-
-                Sleep(1000);
-                std::cout << "Now there's " << pieces << " pieces" << std::endl;
-                std::cout << "------------------------------------" << std::endl;
+                sem_post(&sem);
+                pieces++;
             }
-        pthread_mutex_unlock(&eat);
+            pthread_mutex_lock(&output);
+                std::cout << std::endl << "A Cook woke up and cooked " << M << " pieces" << std::endl << std::endl;
+            pthread_mutex_unlock(&output);
+        }
+        
+        Sleep(1000);
     }
-    
+
     return NULL;
 }
