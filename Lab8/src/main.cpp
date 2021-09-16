@@ -75,6 +75,7 @@ void* callback(void* arg)
         number[index] = count;
 
         pthread_barrier_wait(&barr);
+        
         if (
         (number[0] == number[1]) || 
         (number[0] == number[2]) || 

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+
 void* change(void* arg);
 void* read(void* arg);
 void* count(void* arg);
@@ -83,9 +84,10 @@ void* change(void* arg)
         // int index = rand() % lst.size();
         int val = rand() % 10;
         
-        std::list<int>::iterator elem = lst.begin();
+        pthread_rwlock_rdlock(&rwlock);
+            std::list<int>::iterator elem = lst.begin();
+        pthread_rwlock_unlock(&rwlock);
         std::advance(elem, rand() % lst.size());
-
         pthread_rwlock_wrlock(&rwlock);
             *elem = val;
         pthread_rwlock_unlock(&rwlock);
@@ -107,7 +109,9 @@ void* read(void* arg)
 
         pthread_rwlock_rdlock(&rwlock);
             std::list<int>::iterator elem = lst.begin();
-            std::advance(elem, index);
+        pthread_rwlock_unlock(&rwlock);
+        std::advance(elem, index);
+        pthread_rwlock_rdlock(&rwlock);
             int val = *elem;
         pthread_rwlock_unlock(&rwlock);
 
@@ -147,7 +151,7 @@ void* add(void* arg)
         int val = rand() % 10;
         
         pthread_rwlock_wrlock(&rwlock);
-            position ? lst.insert(lst.begin(), val) : lst.insert(lst.end(), val);
+            lst.insert(position ? lst.begin() : lst.end(), val);
         pthread_rwlock_unlock(&rwlock);
 
         Sleep(2000);

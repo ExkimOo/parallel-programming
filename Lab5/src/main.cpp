@@ -1,6 +1,5 @@
 //g++ -pthread -o main main.cpp
 #include <iostream>
-#include <vector>
 #include <stdlib.h>
 #include <pthread.h>
 #include <semaphore.h>
@@ -87,7 +86,7 @@ void* cook(void* arg)
                 std::cout << std::endl << "A Cook woke up and cooked " << M << " pieces" << std::endl << std::endl;
             pthread_mutex_unlock(&output);
         }
-        
+
         Sleep(1000);
     }
 

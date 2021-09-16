@@ -61,7 +61,7 @@ void* savage(void* arg)
         pthread_mutex_lock(&mutex);
             while (pieces == 0) 
             {
-                pthread_cond_wait(&not_full, &mutex);
+                pthread_cond_wait(&not_empty, &mutex);
             }
             pieces--;
             pthread_mutex_lock(&output);
@@ -69,7 +69,7 @@ void* savage(void* arg)
             pthread_mutex_unlock(&output);
         pthread_mutex_unlock(&mutex);
 
-        pthread_cond_broadcast(&not_empty);
+        pthread_cond_broadcast(&not_full);
 
         Sleep(1000);
     }
@@ -82,9 +82,9 @@ void* cook(void* arg)
     while(true)
     {
         pthread_mutex_lock(&mutex);
-            while (pieces != 0) 
+            while (pieces != 0)
             {
-                pthread_cond_wait(&not_empty, &mutex); 
+                pthread_cond_wait(&not_full, &mutex); 
             }
             pieces = M;
             pthread_mutex_lock(&output);
@@ -92,7 +92,7 @@ void* cook(void* arg)
             pthread_mutex_unlock(&output);
         pthread_mutex_unlock(&mutex);
 
-        pthread_cond_broadcast(&not_full) ;
+        pthread_cond_broadcast(&not_empty);
 
         Sleep(1000);
     }
