@@ -12,7 +12,7 @@ Find the *number* of occurrences of the array in the matrix in forward and backw
 
 ## Laboratory work #4
 
-*Rework* Laboratory work 3 using semaphors.
+*Rework* laboratory work 3 using semaphors.
 
 ## Laboratory work #5
 
@@ -21,7 +21,7 @@ A tribe of **N** savages together eat from a pot, that accomodate **M** pieces o
 
 ## Laboratory work #6
 
-*Rework* Laboratory work 5 using condition variables.
+*Rework* laboratory work 5 using condition variables.
 
 ## Laboratory work #7
 
@@ -38,4 +38,4 @@ A tribe of **N** savages together eat from a pot, that accomodate **M** pieces o
 
 ## Laboratory work #9
 
-In progress...
+*Rework* laboratory works 1, 2 and 8 with **MPI** library.
