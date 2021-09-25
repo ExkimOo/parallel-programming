@@ -42,4 +42,4 @@ A tribe of **N** savages together eat from a pot, that accomodate **M** pieces o
 
 ## Laboratory work #10
 
-Given a set A of N numbers and a set B of K numbers. Make a set C, each number of which is the product of the number of sets A and B, so that the sum of the numbers in set C is maximum.
+Given a set A of N numbers and a set B of K numbers. Make a set C, each number of which is the product of the number of sets A and B, so that the sum of the numbers in set C is maximum. *Use NVIDIA CUDA*.
