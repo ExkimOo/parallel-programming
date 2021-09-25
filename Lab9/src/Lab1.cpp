@@ -12,7 +12,7 @@ class Student
         int math;
         int informatics;
         float avg;
-    
+     
         Student();
         friend std::ostream& operator<<(std::ostream& os, const Student& s);
 
@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    srand(clock_gettime(2, CLOCK_REALTIME));
+    srand(time(NULL) + rank);
 
     int avg_elems = N / size;
     int num_of_elems = rank == 0 ? N-(size-1)*avg_elems : avg_elems;

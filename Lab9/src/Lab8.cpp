@@ -88,7 +88,7 @@ int count_vowels(std::string str, int rank)
     std::regex regular("[AaEeIiOoUuYy]");
     std::cmatch result;
 
-    std::cout << "Vowels in string by thread #" << rank << ": ";
+    std::cout << "Vowels in string by process #" << rank << ": ";
     while(std::regex_search(str.c_str(), result, regular))
     {
         std::cout << result.str();

@@ -6,11 +6,15 @@
 #include <mpi.h>
 
 
+int check(int* A, int* B, int action);
+int* create_matrix(int N, int M);
+void print_matrix(int* A, int N, int M);
+int* create_array(int K);
+void print_array(int* B, int K);
+
 const int N = 5;
 const int M = 5;
 const int K = 3;
-
-std::vector<std::string> queue;
 
 std::vector<std::string> output = {
         "Horizontal forward:\t", 
@@ -23,14 +27,6 @@ std::vector<std::string> output = {
         "Secondary diagonal b:\t"
         };
 
-int check(int** A, int* B, int action);
-int** create_matrix(int N, int M);
-void print_matrix(int** A, int N, int M);
-void delete_matrix(int** A, int N);
-int* create_array(int K);
-void print_array(int* B, int K);
-void delete_array(int* B);
-
 
 int main(int argc, char* argv[])
 {
@@ -41,12 +37,12 @@ int main(int argc, char* argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    int** A;
+    int* A;
     int* B;
     int count;
 
-    srand(clock_gettime(2, CLOCK_REALTIME));
-         
+    srand(time(NULL) + rank);
+
     if (rank == 0)
     {
         A = create_matrix(N, M);
@@ -57,41 +53,32 @@ int main(int argc, char* argv[])
 
         for (int i = 1; i < size; i++)
         {
-            MPI_Send(&(A[0][0]), N*M, MPI_INT, i, 0, MPI_COMM_WORLD);
-            MPI_Send(&(B[0]), K, MPI_INT, i, 1, MPI_COMM_WORLD);
+            MPI_Send(&A[0], N*M, MPI_INT, i, 0, MPI_COMM_WORLD);
+            MPI_Send(&B[0], K, MPI_INT, i, 1, MPI_COMM_WORLD);
         }
     }
 
     if (rank != 0)
     {
-        A = new int* [N];
-        for (int i = 0; i < N; i++)
-        {
-            A[i] = new int [M];
-        }
+        A = new int [N*M];
 
         B = new int [K];
 
-        MPI_Recv(&(A[0][0]), N*M, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, NULL);
-        MPI_Recv(&(B[0]), K, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, NULL);
+        MPI_Recv(&A[0], N*M, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, NULL);
+        MPI_Recv(&B[0], K, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, NULL);
         
-        print_matrix(A, N, M);
         check(A, B, rank);
-        delete_matrix(A, N);
-        delete_array(B);
+        check(A, B, rank + 4);
+        delete[] A;
+        delete[] B;
     }
 
     if (rank == 0)
     {
         check(A, B, rank);
-        delete_matrix(A, M);
-        delete_array(B);
-
-        std::cout << std::endl;
-        for (int i = 0; i < queue.size(); i++)
-        {
-            std::cout << queue[i] << std::endl;
-        }
+        check(A, B, size);
+        delete[] A;
+        delete[] B;
     }
 
     MPI_Finalize();    
@@ -99,46 +86,32 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-int** create_matrix(int N, int M)
+int* create_matrix(int N, int M)
 {
-    int** A = new int* [N];
-    for (int i = 0; i < N; i++)
-    {
-        A[i] = new int [M];
-    }
+    int* A = new int [N*M];
     
     for (int i = 0; i < N; i++)
     {
         for (int j = 0; j < M; j++)
         {
-            A[i][j] = rand() % 3;
+            A[N*i+j] = rand() % 3;
         }
     }
 
     return A;
 }
 
-void print_matrix(int** A, int N, int M)
+void print_matrix(int* A, int N, int M)
 {
     std::cout << "Matrix:" << std::endl;
     for (int i = 0; i < N; i++)
     {
         for (int j = 0; j < M; j++)
         {
-            std::cout << A[i][j] << " ";
+            std::cout << A[N*i+j] << " ";
         }
         std::cout << std::endl;
     }
-    // std::cout << std::endl << std::endl;
-}
-
-void delete_matrix(int** A, int N)
-{
-    for (int i = 0; i < N; i++)
-    {
-        delete[] A[i];
-    }
-    delete[] A;
 }
 
 int* create_array(int K)
@@ -160,15 +133,10 @@ void print_array(int* B, int K)
     {
         std::cout << B[i] << " ";
     }
-    std::cout << std::endl;
+    std::cout << std::endl << std::endl;
 }
 
-void delete_array(int* B)
-{
-    delete[] B;
-}
-
-int check(int** A, int* B, int action)
+int check(int* A, int* B, int action)
 {
     int count = 0;
 
@@ -185,7 +153,7 @@ int check(int** A, int* B, int action)
                     {
                         for (int k = 0; k < K; k++)
                         {
-                            if (A[i][j+k] == B[k])
+                            if (A[i*N+j+k] == B[k])
                             {
                                 if (k == K - 1)
                                 {
@@ -201,7 +169,7 @@ int check(int** A, int* B, int action)
                     
                 }
             }
-            queue.push_back("Process with id " + std::to_string(action) + " found its number of occurrence: " + std::to_string(count));
+            std::cout << "Horizontal forward:\t" << count << std::endl;
             return count;
         }
         //horizontal backward
@@ -215,7 +183,7 @@ int check(int** A, int* B, int action)
                     {
                         for (int k = 0; k < K; k++)
                         {
-                            if (A[i][j+(K-1)-k] == B[k])
+                            if (A[i*N+j+(K-1)-k] == B[k])
                             {
                                 if (k == K - 1)
                                 {
@@ -231,7 +199,7 @@ int check(int** A, int* B, int action)
                     
                 }
             }
-            queue.push_back("Process with id " + std::to_string(action) + " found its number of occurrence: " + std::to_string(count));
+            std::cout << "Horizontal backward:\t" << count << std::endl;
             return count;
         }
         //vertical forward
@@ -245,7 +213,7 @@ int check(int** A, int* B, int action)
                     {
                         for (int k = 0; k < K; k++)
                         {
-                            if (A[i+k][j] == B[k])
+                            if (A[N*(i+k)+j] == B[k])
                             {
                                 if (k == K - 1)
                                 {
@@ -261,7 +229,7 @@ int check(int** A, int* B, int action)
                     
                 }
             }
-            queue.push_back("Process with id " + std::to_string(action) + " found its number of occurrence: " + std::to_string(count));
+            std::cout << "Vertical forward:\t" << count << std::endl;
             return count;
         }
         //vertical backward
@@ -275,7 +243,7 @@ int check(int** A, int* B, int action)
                     {
                         for (int k = 0; k < K; k++)
                         {
-                            if (A[i+(K-1)-k][j] == B[k])
+                            if (A[N*(i+(K-1)-k)+j] == B[k])
                             {
                                 if (k == K - 1)
                                 {
@@ -291,7 +259,7 @@ int check(int** A, int* B, int action)
                     
                 }
             }
-            queue.push_back("Process with id " + std::to_string(action) + " found its number of occurrence: " + std::to_string(count));
+            std::cout << "Vertical backward:\t" << count << std::endl;
             return count;
         }
         //main diagonal forward
@@ -305,7 +273,7 @@ int check(int** A, int* B, int action)
                     {
                         for (int k = 0; k < K; k++)
                         {
-                            if (A[i+k][j+k] == B[k])
+                            if (A[N*(i+k)+j+k] == B[k])
                             {
                                 if (k == K - 1)
                                 {
@@ -320,7 +288,7 @@ int check(int** A, int* B, int action)
                     }
                 }
             }
-            queue.push_back("Process with id " + std::to_string(action) + " found its number of occurrence: " + std::to_string(count));
+            std::cout << "Main diagonal forward:\t" << count << std::endl;
             return count;
         }
         //main diagonal backward
@@ -334,8 +302,7 @@ int check(int** A, int* B, int action)
                     {
                         for (int k = 0; k < K; k++)
                         {
-                            // if (A[i+(K-1)-k][j+(K-1)-k] == B[k])
-                            if (A[i+k][j+k] == B[(K-1)-k])
+                            if (A[N*(i+k)+j+k] == B[(K-1)-k])
                             {
                                 if (k == K - 1)
                                 {
@@ -351,7 +318,7 @@ int check(int** A, int* B, int action)
                     
                 }
             }
-            queue.push_back("Process with id " + std::to_string(action) + " found its number of occurrence: " + std::to_string(count));
+            std::cout << "Main diagonal backward:\t" << count << std::endl;
             return count;
         }
         //secondary diaganal forward
@@ -365,7 +332,7 @@ int check(int** A, int* B, int action)
                     {
                         for (int k = 0; k < K; k++)
                         {
-                            if (A[i-k][j+k] == B[k])
+                            if (A[N*(i-k)+j+k] == B[k])
                             {
                                 if (k == K - 1)
                                 {
@@ -381,7 +348,7 @@ int check(int** A, int* B, int action)
                     
                 }
             }
-            queue.push_back("Process with id " + std::to_string(action) + " found its number of occurrence: " + std::to_string(count));
+            std::cout << "Secondary diagonal f:\t" << count << std::endl;
             return count;
         }
         //secondary diagonal backward
@@ -395,9 +362,7 @@ int check(int** A, int* B, int action)
                     {
                         for (int k = 0; k < K; k++)
                         {   
-                            // std::cout << "A[" << i+(K-2)+k << "][" << j+(K-2)-k << "] = " << A[i+(K-2)+k][j+(K-2)-k] << std::endl;
-                            // std::cout << i-k << " " << j+k << std::endl;
-                            if (A[i-k][j+k] == B[(K-1)-k])
+                            if (A[N*(i-k)+j+k] == B[(K-1)-k])
                             {
                                 if (k == K - 1)
                                 {
@@ -413,7 +378,7 @@ int check(int** A, int* B, int action)
                     
                 }
             }
-            queue.push_back("Process with id " + std::to_string(action) + " found its number of occurrence: " + std::to_string(count));
+            std::cout << "Secondary diagonal b:\t" << count << std::endl;
             return count;
         }
         default:
