@@ -4,13 +4,13 @@ from time import sleep
 
 N = 5
 M = 3
+
 passengers = [randint(1, 3) for _ in range(N)]
 buses = [[i, randint(0, N - 1), 0] for i in range(M)]
 
 change_mutex = Lock()
 print_mutex = Lock()
 sem = Semaphore(M)
-sem.release()
 
 
 def main():

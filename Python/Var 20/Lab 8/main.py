@@ -23,8 +23,7 @@ def generate_set(barrier):
         numbers = set([randint(1, 7) for _ in range(5)])
         sets[id - 1] = numbers
 
-        with mutex:
-            print(f'Thread {id}, set:', numbers)
+        print(f'Thread {id}, set:', numbers)
 
         sleep(0.5)
 

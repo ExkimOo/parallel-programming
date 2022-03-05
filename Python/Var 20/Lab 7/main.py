@@ -46,7 +46,6 @@ def main():
 
 def delete_rectangle():
     global rectangles
-    global lock
 
     while True:
         rwlock.acquire_w()
@@ -60,7 +59,6 @@ def delete_rectangle():
 
 def add_rectangle():
     global rectangles
-    global lock
 
     while True:
         rwlock.acquire_w()
@@ -75,7 +73,6 @@ def add_rectangle():
 
 def print_rectangles():
     global rectangles
-    global lock
 
     while True:
         rwlock.acquire_r()
@@ -87,7 +84,6 @@ def print_rectangles():
 
 def print_max_rectangle_area():
     global rectangles
-    global lock
 
     while True:
         rwlock.acquire_r()
